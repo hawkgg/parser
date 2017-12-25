@@ -7,12 +7,12 @@
 		'remember' => 'on'
 	);
 
-	$c = curl::app('http://yknow.ru')
+	$c = curl::app('http://vk.com')
 					->headers(1)
-					->post(http_build_query($post))
-					->set_cookie($_SERVER['DOCUMENT_ROOT'] . '/cookies/1.txt');
+					->post($post)
+					->set_cookie('cookies/1.txt');
 
-	$data = $c->request('clients/login');
-	$data = $c->request('clients/office');
+	$data = $c->request('/');
+	$data = $c->request('/');
 
 	var_dump($data);

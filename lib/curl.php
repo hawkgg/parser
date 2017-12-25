@@ -1,68 +1,83 @@
 <?php
 
-class curl{
+class Curl
+{
 	private $ch;
-	private $host;
 	private $options = [];
 
-	public static function app($host){
-		return new self($host);
+	public static function app()
+	{
+		return new self();
 	}
 
-	private function __construct($host){
+	private function __construct()
+	{
 		$this->ch = curl_init();
-		$this->host = $host;
 		$this->set(CURLOPT_RETURNTRANSFER, true);
 	}
 
-	public function __destruct(){
+	public function __destruct()
+	{
 		curl_close($this->ch);
 	}
 
-    public function get($option) {
+    public function get($option)
+    {
         return $this->options[$option];
     }
 
-	public function set($name, $value){
+	public function set($name, $value)
+	{
 		$this->options[$name] = $value;
 		curl_setopt($this->ch, $name, $value);
+
 		return $this;
 	}
 
-	public function ssl($act){
+	public function ssl($act)
+	{
 		$this->set(CURLOPT_SSL_VERIFYPEER, $act);
 		$this->set(CURLOPT_SSL_VERIFYHOST, $act);
+
 		return $this;
 	}
 
-	public function headers($act){
+	public function headers($act)
+	{
 		$this->set(CURLOPT_HEADER, $act);
+
 		return $this;
 	}
 
-    public function set_header($name, $value){
+    public function set_header($name, $value)
+    {
         $this->options[CURLOPT_HTTPHEADER][$name] = $value;
-
         $this->set(CURLOPT_HTTPHEADER, $this->options[CURLOPT_HTTPHEADER]);
+
         return $this;
     }
 
-	public function set_headers($headers){
-        foreach($headers as $key => $header){
+	public function set_headers($headers)
+	{
+        foreach ($headers as $key => $header) {
             $this->options[CURLOPT_HTTPHEADER][$key] = $header;
         }
 
 		$this->set(CURLOPT_HTTPHEADER, $this->options[CURLOPT_HTTPHEADER]);
+
 		return $this;
 	}
 
-    public function clear_headers(){
+    public function clear_headers()
+    {
         $this->set(CURLOPT_HTTPHEADER, array());
+
         return $this;
     }
 
-    public function set_user_agent($agent = null){
-    	if(!$agent){
+    public function set_user_agent($agent = null)
+    {
+    	if (!$agent) {
 	        $agents = [
 	            'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0',
 	            'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0'
@@ -73,66 +88,75 @@ class curl{
 	        $this->options[CURLOPT_HTTPHEADER]['User-Agent'] = $agent;
 	        $this->set(CURLOPT_HTTPHEADER, $this->options[CURLOPT_HTTPHEADER]);
     	}
+
         return $this;
     }
 
-	public function set_cookie($dir){
-		$this->set(CURLOPT_COOKIEJAR, $dir);
-		$this->set(CURLOPT_COOKIEFILE, $dir);
+	public function set_cookie($dir)
+	{
+		$this->set(CURLOPT_COOKIEJAR, $_SERVER['DOCUMENT_ROOT'] . '/' . $dir);
+		$this->set(CURLOPT_COOKIEFILE, $_SERVER['DOCUMENT_ROOT'] . '/' . $dir);
+
 		return $this;
 	}
 
-	public function post($data){
-		if($data === false){
+	public function post($data)
+	{
+		if ($data === false) {
 			$this->set(CURLOPT_POST, false);
 			return $this;
 		}
 
         $this->set(CURLOPT_POST, true);
 		$this->set(CURLOPT_POSTFIELDS, http_build_query($data));
+
 		return $this;
 	}
 
-	public function follow($act){
+	public function follow($act)
+	{
 		$this->set(CURLOPT_FOLLOWLOCATION, $act);
+
 		return $this;
 	}
 
-    public function referer($url) {
+    public function referer($url)
+    {
         $this->set(CURLOPT_REFERER, $url);
+
         return $this;
     }
 
-	public function request($url){
-		$this->set(CURLOPT_URL, $this->make_url($url));
+	public function request($url)
+	{
+		$this->set(CURLOPT_URL, $url);
 		$data = curl_exec($this->ch);
+
 		return $this->process_result($data);
 	}
 
-	public function config_load($dir){
+	public function config_load($dir)
+	{
 		$values = json_decode(file_get_contents($dir));
-		foreach($values as $name => $value){
+
+		foreach ($values as $name => $value) {
 			$this->set($name, $value);
 		}
+
 		return $this;
 	}
 
-	public function config_save($dir){
+	public function config_save($dir)
+	{
 		$data = json_encode($this->options);
 		file_put_contents($dir, $data);
+
 		return $this;
 	}
 
-	private function make_url($url){
-		if($url[0] != '/')
-			$url = '/' . $url;
-
-		return $this->host . $url;
-	}
-
-	private function process_result($data){
-		var_dump(count($this->options[CURLOPT_HTTPHEADER]));
-		if(!isset($this->options[CURLOPT_HEADER])) {
+	private function process_result($data)
+	{
+		if (!isset($this->options[CURLOPT_HEADER])) {
 			return array(
 				'headers' => array(),
 				'html' => $data
@@ -156,10 +180,12 @@ class curl{
 		foreach ($headers as $value) {
 			$start = stripos($value, 'Location:');
 
-			if (!$start) continue;
+			if (!$start) {
+				continue;
+			}
 
 			$start += strlen('Location:') + 1;
-			$end = stripos(substr($value, $start), "\n") ? $end : strlen($value);
+			$end = ($end = stripos(substr($value, $start), "\n")) ? $end : strlen($value);
 			$redirects[] = substr($value, $start, $end);
 		}
 
@@ -170,7 +196,7 @@ class curl{
 		/* Парсим заголовки */
 		$headers['start'] = $lines[0];
 
-		for($i = 1; $i < count($lines); $i++){
+		for ($i = 1; $i < count($lines); $i++) {
 			$del_pos = strpos($lines[$i], ':');
 			$name = substr($lines[$i], 0, $del_pos);
 			$value = substr($lines[$i], $del_pos + 2);
