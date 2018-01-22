@@ -59,8 +59,8 @@ class Curl
 
 	public function set_headers($headers)
 	{
-        foreach ($headers as $key => $header) {
-            $this->options[CURLOPT_HTTPHEADER][$key] = $header;
+        foreach ($headers as $header => $value) {
+            $this->options[CURLOPT_HTTPHEADER][$header] = $value;
         }
 
 		$this->set(CURLOPT_HTTPHEADER, $this->options[CURLOPT_HTTPHEADER]);
@@ -79,8 +79,7 @@ class Curl
     {
     	if (!$agent) {
 	        $agents = [
-	            'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0',
-	            'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X x.y; rv:42.0) Gecko/20100101 Firefox/42.0'
+                'Opera/9.8 (J2ME/MIDP; Opera Mini/5.0 U; ru)', // мобильный user-agent
 	        ];
 	        $this->options[CURLOPT_HTTPHEADER]['User-Agent'] = $agents[rand(0, count($agents)-1)];
 	        $this->set(CURLOPT_HTTPHEADER, $this->options[CURLOPT_HTTPHEADER]);
