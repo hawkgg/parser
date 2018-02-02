@@ -1,9 +1,9 @@
 <?php
 
-include_once 'lib/curl.php';
-include_once 'lib/simple_html_dom.php';
-include_once 'lib/parser.php';
-include_once 'lib/sql.php';
+include_once '../parser/lib/curl.php';
+include_once '../parser/lib/simple_html_dom.php';
+include_once '../parser/lib/parser.php';
+include_once '../parser/lib/sql.php';
 
 // Убираем ограничение по времени исполнения скрипта
 ini_set('max_execution_time', 0);
@@ -19,7 +19,7 @@ $c = Curl::app()
         ;
 
 // Загружаем настройки соединения
-$c->config_load('cfg/1.cfg');
+$c->config_load('../parser/cfg/1.cfg');
 
 $data = $c->request('https://pdd.yandex.ru/');
 

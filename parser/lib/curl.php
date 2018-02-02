@@ -2,8 +2,8 @@
 
 class Curl
 {
-	private $ch;
-	private $options = [];
+	private $ch; // экземпляр курла
+	private $options = []; // параметры
 
 	public static function app()
 	{
@@ -21,11 +21,26 @@ class Curl
 		curl_close($this->ch);
 	}
 
+    /**
+     * Получает параметр из массива с параметрами
+     * 
+     * @param string $option
+     * Наименование параметра
+     */
     public function get($option)
     {
         return $this->options[$option];
     }
 
+    /**
+     * Задает параметр для курла и сохраняет его в массив с параметрами
+     * 
+     * @param string $name
+     * Наименование параметра
+     * 
+     * @param string $value
+     * Значение параметра
+     */
 	public function set($name, $value)
 	{
 		$this->options[$name] = $value;
@@ -34,6 +49,12 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Режим SSL
+     * 
+     * @param bool $act
+     * 1 - включить, 0 - выключить
+     */
 	public function ssl($act)
 	{
 		$this->set(CURLOPT_SSL_VERIFYPEER, $act);
@@ -42,6 +63,12 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Отображение заголовков
+     * 
+     * @param bool $act
+     * 1 - включить, 0 - выключить
+     */
 	public function headers($act)
 	{
 		$this->set(CURLOPT_HEADER, $act);
@@ -49,6 +76,15 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Добавляет заголовок в курл и записывает его в массив с параметрами
+     * 
+     * @param string $name
+     * Наименование заголовка
+     * 
+     * @param string $value
+     * Значение заголовка
+     */
     public function set_header($name, $value)
     {
         $this->options[CURLOPT_HTTPHEADER][$name] = $value;
@@ -57,6 +93,12 @@ class Curl
         return $this;
     }
 
+    /**
+     * Добавляет заголовки в курл и записывает их в массив с параметрами
+     * 
+     * @param array $headers
+     * Массив с заголовками
+     */
 	public function set_headers($headers)
 	{
         foreach ($headers as $header => $value) {
@@ -68,6 +110,9 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Очищает заголовки
+     */
     public function clear_headers()
     {
         $this->set(CURLOPT_HTTPHEADER, array());
@@ -75,6 +120,12 @@ class Curl
         return $this;
     }
 
+    /**
+     * Поддельный юзер агент
+     * 
+     * @param string $agent
+     * Желаемая строка юзер агента. В случае отсутствия, задается рандомная из массива
+     */
     public function set_user_agent($agent = null)
     {
     	if (!$agent) {
@@ -91,6 +142,12 @@ class Curl
         return $this;
     }
 
+    /**
+     * Файл для сохранения/чтения куков
+     * 
+     * @param string $dir
+     * Путь до файла (обязательно от корня)
+     */
 	public function set_cookie($dir)
 	{
 		$this->set(CURLOPT_COOKIEJAR, $_SERVER['DOCUMENT_ROOT'] . '/' . $dir);
@@ -99,6 +156,13 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Режим отправки данных (POST)
+     * 
+     * @param mixed $data
+     * array - данные для отправки
+     * false - отключить режим
+     */
 	public function post($data)
 	{
 		if ($data === false) {
@@ -112,6 +176,12 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Поддержка редиректов
+     * 
+     * @param bool $act
+     * 1 - включить, 0 - выключить
+     */
 	public function follow($act)
 	{
 		$this->set(CURLOPT_FOLLOWLOCATION, $act);
@@ -119,6 +189,12 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Поддельный источник запроса
+     * 
+     * @param string $url
+     * URL-адрес источника
+     */
     public function referer($url)
     {
         $this->set(CURLOPT_REFERER, $url);
@@ -126,6 +202,12 @@ class Curl
         return $this;
     }
 
+    /**
+     * Выполняет запрос на страницу
+     * 
+     * @param string $url
+     * URL-адрес страницы
+     */
 	public function request($url)
 	{
 		$this->set(CURLOPT_URL, $url);
@@ -134,6 +216,12 @@ class Curl
 		return $this->process_result($data);
 	}
 
+    /**
+     * Загружает параметры из файла
+     * 
+     * @param string $dir
+     * Путь до файла
+     */
 	public function config_load($dir)
 	{
 		$values = json_decode(file_get_contents($dir));
@@ -145,6 +233,12 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Сохраняет массив с параметрами в файл
+     * 
+     * @param string $dir
+     * Путь
+     */
 	public function config_save($dir)
 	{
 		$data = json_encode($this->options);
@@ -153,6 +247,12 @@ class Curl
 		return $this;
 	}
 
+    /**
+     * Отделяет заголовки от контента
+     * 
+     * @param string $data
+     * Строка с данными
+     */
 	private function process_result($data)
 	{
 		if (!isset($this->options[CURLOPT_HEADER])) {

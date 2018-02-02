@@ -2,8 +2,8 @@
 
 class SQL
 {
-	private static $instance;
-	private $db;
+	private static $instance; // экземпляр класса SQL
+	private $db; // экземпляр класса PDO
 
 	public static function app()
 	{
@@ -22,6 +22,15 @@ class SQL
 		$this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 	}
 
+    /**
+     * Вытягивает данные
+     * 
+     * @param string $query
+     * Строка запроса
+     * 
+     * @param array $params
+     * Массив с параметрами, если запрос динамический
+     */
 	public function select($query, $params = array())
 	{
 		$q = $this->db->prepare($query);
@@ -35,18 +44,26 @@ class SQL
 		return $q->fetchAll();
 	}
 
-
-	public function insert($table, $object)
+    /**
+     * Кладет данные
+     * 
+     * @param string $table
+     * Название таблицы
+     * 
+     * @param array $arr
+     * Массив с данными
+     */
+	public function insert($table, $arr)
 	{
 		$columns = array();
 
-		foreach ($object as $key => $value) {
+		foreach ($arr as $key => $value) {
 
 			$columns[] = $key;
 			$masks[] = ":$key";
 
 			if ($value === null) {
-				$object[$key] = 'NULL';
+				$arr[$key] = 'NULL';
 			}
 		}
 
@@ -56,7 +73,7 @@ class SQL
 		$query = "INSERT INTO $table ($columns_s) VALUES ($masks_s)";
 
 		$q = $this->db->prepare($query);
-		$q->execute($object);
+		$q->execute($arr);
 
 		if ($q->errorCode() != PDO::ERR_NONE) {
 			$info = $q->errorInfo();
@@ -66,16 +83,31 @@ class SQL
 		return $this->db->lastInsertId();
 	}
 
-	public function update($table, $object, $where, $params = array())
+    /**
+     * Обновляет данные
+     * 
+     * @param string $table
+     * Название таблицы
+     * 
+     * @param array $arr
+     * Массив с данными
+     * 
+     * @param string $where
+     * Условие
+     * 
+     * @param array $params
+     * Массив с параметрами, если запрос динамический
+     */
+	public function update($table, $arr, $where, $params = array())
 	{
 		$sets = array();
 
-		foreach ($object as $key => $value) {
+		foreach ($arr as $key => $value) {
 
-			$sets[] = "$key=:$key";
+			$sets[] = "$key=:$value";
 
 			if ($value === NULL) {
-				$object[$key]='NULL';
+				$arr[$key]='NULL';
 			}
 		 }
 
@@ -83,7 +115,7 @@ class SQL
 		$query = "UPDATE $table SET $sets_s WHERE $where";
 
 		$q = $this->db->prepare($query);
-		$q->execute(array_merge($object, $params));
+		$q->execute(array_merge($arr, $params));
 
 		if ($q->errorCode() != PDO::ERR_NONE) {
 			$info = $q->errorInfo();
@@ -93,7 +125,18 @@ class SQL
 		return $q->rowCount();
 	}
 
-
+    /**
+     * Удаляет данные
+     * 
+     * @param string $table
+     * Название таблицы
+     * 
+     * @param string $where
+     * Условие
+     * 
+     * @param array $params
+     * Массив с параметрами, если запрос динамический
+     */
 	public function delete($table, $where, $params = array())
 	{
 		$query = "DELETE FROM $table WHERE $where";
